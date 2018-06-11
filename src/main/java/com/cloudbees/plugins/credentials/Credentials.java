@@ -23,6 +23,8 @@
  */
 package com.cloudbees.plugins.credentials;
 
+import com.cloudbees.plugins.credentials.api.resource.APIExportable;
+import com.cloudbees.plugins.credentials.api.resource.APIResource;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
@@ -39,7 +41,7 @@ import java.io.Serializable;
  * base class when retrofitting support for credentials into an existing plugin.</li>
  * </ol>
  */
-public interface Credentials extends Describable<Credentials>, Serializable, ExtensionPoint {
+public interface Credentials extends Describable<Credentials>, Serializable, ExtensionPoint, APIExportable {
     /**
      * Gets the scope of the credential.
      *

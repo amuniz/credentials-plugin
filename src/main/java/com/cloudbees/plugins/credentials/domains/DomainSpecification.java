@@ -24,6 +24,7 @@
 
 package com.cloudbees.plugins.credentials.domains;
 
+import com.cloudbees.plugins.credentials.api.resource.APIExportable;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
@@ -35,7 +36,7 @@ import java.io.Serializable;
  * @since 1.5
  */
 public abstract class DomainSpecification extends AbstractDescribableImpl<DomainSpecification>
-        implements ExtensionPoint, Serializable {
+        implements ExtensionPoint, Serializable, APIExportable {
 
     /**
      * Tests the scope against this specification.

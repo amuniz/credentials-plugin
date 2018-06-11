@@ -24,13 +24,19 @@
 package com.cloudbees.plugins.credentials.impl;
 
 import com.cloudbees.plugins.credentials.CredentialsScope;
+import com.cloudbees.plugins.credentials.api.resource.APIResource;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.util.Secret;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Concrete implementation of {@link StandardUsernamePasswordCredentials}.
@@ -108,6 +114,56 @@ public class UsernamePasswordCredentialsImpl extends BaseStandardCredentials imp
         @Override
         public String getIconClassName() {
             return "icon-credentials-userpass";
+        }
+    }
+
+    @Override
+    public APIResource getDataAPI() {
+        return new Resource(this);
+    }
+
+    @Symbol("usernamePassword")
+    public static final class Resource extends BaseStandardCredentials.Resource {
+
+        private String username;
+        // not getter for password as it is not "readable" through the API
+        private String password;
+
+        public Resource() {}
+
+        public Resource(UsernamePasswordCredentialsImpl model) {
+            super(model);
+            username = model.getUsername();
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        @Override
+        public Object toModel() {
+            return new UsernamePasswordCredentialsImpl(
+                    CredentialsScope.valueOf(this.getScope()),
+                    this.getId(),
+                    this.getDescription(),
+                    this.username, this.password);
+        }
+
+        @Override
+        public List<String> validate() {
+            // username is a required field
+            if (username == null) {
+                return Arrays.asList("username is a required field");
+            }
+            return Collections.emptyList();
         }
     }
 }
