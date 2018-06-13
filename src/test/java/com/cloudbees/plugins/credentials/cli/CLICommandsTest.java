@@ -245,6 +245,25 @@ public class CLICommandsTest {
     }
 
     @Test
+    public void listSmokesJSON() throws Exception {
+        Domain smokes = new Domain("smokes", "smoke test domain",
+                Collections.<DomainSpecification>singletonList(new HostnameSpecification("smokes.example.com", null)));
+        UsernamePasswordCredentialsImpl smokey =
+                new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "smokes-id", "smoke testing", "smoke",
+                        "smoke text");
+        UsernamePasswordCredentialsImpl smokey2 =
+                new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "smokes-id-2", "smoke testing", "smoke",
+                        "smoke text");
+        store.addDomain(smokes, smokey);
+        store.addCredentials(smokes, smokey2);
+
+        // now check listing credentials (expect empty)
+        CLICommandInvoker invoker = new CLICommandInvoker(r, new ListCredentialsCommand());
+        CLICommandInvoker.Result result = invoker.invokeWithArgs("system::system::jenkins", "--json");
+        System.out.println("Output: " + result.stdout());
+    }
+
+    @Test
     public void updateSmokes() throws Exception {
         Domain smokes = new Domain("smokes", "smoke test domain",
                 Collections.<DomainSpecification>singletonList(new HostnameSpecification("smokes.example.com", null)));

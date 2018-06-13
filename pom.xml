@@ -65,8 +65,8 @@
   </scm>
 
   <properties>
-    <jenkins.version>1.625.3</jenkins.version>
-    <java.level>7</java.level>
+      <java.level>8</java.level>
+      <jenkins.version>2.60.3</jenkins.version>
     <antlr4.version>4.5</antlr4.version>
   </properties>
 
@@ -89,6 +89,23 @@
       <artifactId>structs</artifactId>
       <version>1.7</version>
     </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>jackson2-api</artifactId>
+      <version>2.8.11.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-xml</artifactId>
+      <version>2.8.11</version>
+    </dependency>
+      <!-- https://mvnrepository.com/artifact/org.json/json -->
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20160212</version>
+    </dependency>
+
     <!-- test dependencies -->
     <dependency>
       <groupId>org.mockito</groupId>
