@@ -29,10 +29,12 @@ import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.CredentialsSelectHelper;
 import com.cloudbees.plugins.credentials.CredentialsStore;
 import com.cloudbees.plugins.credentials.SystemCredentialsProvider;
+import com.cloudbees.plugins.credentials.api.endpoint.SparkHTTPEndpoint;
 import com.cloudbees.plugins.credentials.domains.Domain;
 import com.cloudbees.plugins.credentials.domains.DomainSpecification;
 import com.cloudbees.plugins.credentials.domains.HostnameSpecification;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
+import hudson.ExtensionList;
 import hudson.cli.CLICommand;
 import hudson.cli.CLICommandInvoker;
 import hudson.model.Items;
@@ -302,6 +304,7 @@ public class CLICommandsTest {
 
     @Test
     public void jsonCLISmokes() throws IOException {
+        ExtensionList.lookup(SparkHTTPEndpoint.class);
         Domain smokes = new Domain("smokes", "smoke test domain",
                 Collections.<DomainSpecification>singletonList(new HostnameSpecification("smokes.example.com", null)));
         UsernamePasswordCredentialsImpl smokey =
