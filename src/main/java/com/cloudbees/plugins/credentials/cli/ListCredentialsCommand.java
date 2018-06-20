@@ -28,7 +28,7 @@ import com.cloudbees.plugins.credentials.CredentialsNameProvider;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsStore;
 import com.cloudbees.plugins.credentials.api.resource.APIResource;
-import com.cloudbees.plugins.credentials.api.resource.JSONCLICommandHelper;
+import com.cloudbees.plugins.credentials.api.util.JSONCLICommandHelper;
 import com.cloudbees.plugins.credentials.api.resource.VersionedResource;
 import com.cloudbees.plugins.credentials.common.IdCredentials;
 import com.cloudbees.plugins.credentials.domains.Domain;

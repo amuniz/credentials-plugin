@@ -1,5 +1,7 @@
-package com.cloudbees.plugins.credentials.api.resource;
+package com.cloudbees.plugins.credentials.api.util;
 
+import com.cloudbees.plugins.credentials.api.resource.JSONDataMapper;
+import com.cloudbees.plugins.credentials.api.resource.VersionedResource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

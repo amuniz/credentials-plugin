@@ -3,7 +3,7 @@ package com.cloudbees.plugins.credentials.cli;
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsStore;
 import com.cloudbees.plugins.credentials.api.resource.APIResource;
-import com.cloudbees.plugins.credentials.api.resource.JSONCLICommandHelper;
+import com.cloudbees.plugins.credentials.api.util.JSONCLICommandHelper;
 import com.cloudbees.plugins.credentials.api.resource.VersionedResource;
 import com.cloudbees.plugins.credentials.domains.Domain;
 import com.cloudbees.plugins.credentials.domains.DomainCredentials;
