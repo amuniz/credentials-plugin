@@ -60,6 +60,7 @@ public class CredentialsHTTPEndpoint extends APIEndpoint {
         return JSONDataMapper.getJSONMapper().
                 writeValueAsString(new VersionedResource(
                         credentials.stream()
+                                .filter(cred -> cred.getDataAPI() != null)
                                 .map(cred -> cred.getDataAPI())
                                 .collect(Collectors.toList())));
     }
