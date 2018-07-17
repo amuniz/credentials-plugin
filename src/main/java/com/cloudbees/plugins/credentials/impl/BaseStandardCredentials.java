@@ -234,4 +234,44 @@ public abstract class BaseStandardCredentials extends BaseCredentials implements
 
     }
 
+    /**
+     * This model object has no data API by itself (not getDataAPI override) because it is abstract and there is no data
+     * operation on it directly. Their subclasses must provide the real API.
+     *
+     * However it has a Resource to map the model owned at this level.
+     *
+     * TODO: Resource implementations should be placed outside the model (keeping it here as an inner class for easier development).
+     */
+    public static class Resource extends BaseCredentials.Resource {
+
+        private String id;
+
+        private String description;
+
+        public Resource() {}
+
+        public Resource(BaseStandardCredentials model) {
+            super(model);
+            id = model.getId();
+            description = model.getDescription();
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+
+    }
 }

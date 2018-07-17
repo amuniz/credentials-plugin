@@ -24,12 +24,15 @@
 
 package com.cloudbees.plugins.credentials.domains;
 
+import com.cloudbees.plugins.credentials.api.resource.APIResource;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -134,6 +137,31 @@ public class SchemeSpecification extends DomainSpecification {
         @Override
         public String getDisplayName() {
             return Messages.SchemeSpecification_DisplayName();
+        }
+    }
+
+    @Override
+    public APIResource getDataAPI() {
+        return new Resource(this);
+    }
+
+    @Symbol("schemeSpec")
+    public static class Resource extends APIResource {
+
+        private Set<String> schemes;
+
+        public Resource() {}
+
+        public Resource(SchemeSpecification model) {
+            this.schemes = model.schemes;
+        }
+
+        public Set<String> getSchemes() {
+            return schemes;
+        }
+
+        public void setSchemes(Set<String> schemes) {
+            this.schemes = schemes;
         }
     }
 }

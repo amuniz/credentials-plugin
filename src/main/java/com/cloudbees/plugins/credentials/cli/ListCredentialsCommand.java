@@ -27,14 +27,24 @@ import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsNameProvider;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsStore;
+import com.cloudbees.plugins.credentials.api.resource.APIResource;
+import com.cloudbees.plugins.credentials.api.util.JSONCLICommandHelper;
+import com.cloudbees.plugins.credentials.api.resource.VersionedResource;
 import com.cloudbees.plugins.credentials.common.IdCredentials;
 import com.cloudbees.plugins.credentials.domains.Domain;
+import com.cloudbees.plugins.credentials.domains.DomainCredentials;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import hudson.Extension;
+
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.Option;
 
 /**
  * Lists the credentials in a specific credentials store
@@ -48,6 +58,12 @@ public class ListCredentialsCommand extends BaseCredentialsCLICommand {
      */
     @Argument(metaVar = "STORE", usage = "Store ID", required = true)
     public CredentialsStore store;
+
+    @Option(name = "--json")
+    private boolean asJson;
+
+    @Option(name = "--yaml")
+    private boolean asYaml;
 
     /**
      * {@inheritDoc}
@@ -64,43 +80,68 @@ public class ListCredentialsCommand extends BaseCredentialsCLICommand {
     protected int run() throws Exception {
         store.checkPermission(CredentialsProvider.VIEW);
         List<Domain> domains = store.getDomains();
+
+        if (asJson || asYaml) {
+            List<APIResource> all = new ArrayList<>();
+            domains.stream().forEach(domain -> {
+                DomainCredentials domainCredentials = new DomainCredentials(domain, store.getCredentials(domain));
+                all.add(domainCredentials.getDataAPI());
+            });
+            if (asJson) {
+                // print all credentials collected before
+                JSONCLICommandHelper.writeOutput(new VersionedResource(all), stdout);
+            } else if (asYaml) {
+                // TODO: this should be just another I/O API format, extensible
+                //YAMLCLICommandHelper.writeOutput(new VersionedResource(all), stdout);
+                YAMLFactory yf = new YAMLFactory();
+                ObjectMapper mapper = new ObjectMapper(yf);
+                mapper.writeValue(stdout, new VersionedResource(all));
+            }
+            return 0;
+        }
+
         for (Domain domain : domains) {
             List<Credentials> credentials = store.getCredentials(domain);
-            Map<String, String> nameById = new LinkedHashMap<String, String>(credentials.size());
-            int maxIdLen = "# of Credentials".length(), maxNameLen = 0;
-            int index = 0;
-            for (Credentials c : credentials) {
-                String id;
-                if (c instanceof IdCredentials) {
-                    id = ((IdCredentials) c).getId();
-                } else {
-                    while (nameById.containsKey("index-" + index)) {
-                        index++;
-                    }
-                    id = "index-" + index;
+            printAsPlainText(domain, credentials);
+        }
+
+        return 0;
+    }
+
+    private void printAsPlainText(Domain domain, List<Credentials> credentials) {
+        Map<String, String> nameById = new LinkedHashMap<String, String>(credentials.size());
+        int maxIdLen = "# of Credentials".length(), maxNameLen = 0;
+        int index = 0;
+        for (Credentials c : credentials) {
+            String id;
+            if (c instanceof IdCredentials) {
+                id = ((IdCredentials) c).getId();
+            } else {
+                while (nameById.containsKey("index-" + index)) {
                     index++;
                 }
-                String name = CredentialsNameProvider.name(c);
-                nameById.put(id, name);
-                maxIdLen = Math.max(maxIdLen, id.length());
-                maxNameLen = Math.max(maxNameLen, name.length());
+                id = "index-" + index;
+                index++;
             }
-            stdout.println(StringUtils.repeat("=", maxIdLen + maxNameLen + 1));
-            stdout.println(StringUtils.rightPad("Domain", maxIdLen) + " " + (domain.isGlobal()
-                    ? "(global)"
-                    : domain.getName()));
-            stdout.println(StringUtils.rightPad("Description", maxIdLen) + " " + StringUtils
-                    .defaultString(domain.getDescription()));
-            stdout.println(StringUtils.rightPad("# of Credentials", maxIdLen) + " " + credentials.size());
-            stdout.println(StringUtils.repeat("=", maxIdLen + maxNameLen + 1));
-            stdout.println(StringUtils.rightPad("Id", maxIdLen) + " Name");
-            stdout.println(StringUtils.repeat("=", maxIdLen) + " " + StringUtils.repeat("=", maxNameLen));
-            for (Map.Entry<String, String> entry : nameById.entrySet()) {
-                stdout.println(StringUtils.rightPad(entry.getKey(), maxIdLen) + " " + entry.getValue());
-            }
-            stdout.println(StringUtils.repeat("=", maxIdLen + maxNameLen + 1));
-            stdout.println();
+            String name = CredentialsNameProvider.name(c);
+            nameById.put(id, name);
+            maxIdLen = Math.max(maxIdLen, id.length());
+            maxNameLen = Math.max(maxNameLen, name.length());
         }
-        return 0;
+        stdout.println(StringUtils.repeat("=", maxIdLen + maxNameLen + 1));
+        stdout.println(StringUtils.rightPad("Domain", maxIdLen) + " " + (domain.isGlobal()
+                ? "(global)"
+                : domain.getName()));
+        stdout.println(StringUtils.rightPad("Description", maxIdLen) + " " + StringUtils
+                .defaultString(domain.getDescription()));
+        stdout.println(StringUtils.rightPad("# of Credentials", maxIdLen) + " " + credentials.size());
+        stdout.println(StringUtils.repeat("=", maxIdLen + maxNameLen + 1));
+        stdout.println(StringUtils.rightPad("Id", maxIdLen) + " Name");
+        stdout.println(StringUtils.repeat("=", maxIdLen) + " " + StringUtils.repeat("=", maxNameLen));
+        for (Map.Entry<String, String> entry : nameById.entrySet()) {
+            stdout.println(StringUtils.rightPad(entry.getKey(), maxIdLen) + " " + entry.getValue());
+        }
+        stdout.println(StringUtils.repeat("=", maxIdLen + maxNameLen + 1));
+        stdout.println();
     }
 }

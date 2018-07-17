@@ -23,6 +23,7 @@
  */
 package com.cloudbees.plugins.credentials;
 
+import com.cloudbees.plugins.credentials.api.resource.APIResource;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
@@ -75,5 +76,32 @@ public class BaseCredentials implements Credentials {
     public CredentialsDescriptor getDescriptor() {
         // TODO switch to Jenkins.getInstance() once 2.0+ is the baseline
         return (CredentialsDescriptor) Jenkins.getActiveInstance().getDescriptorOrDie(getClass());
+    }
+
+    /**
+     * This model object has no data API by itself (not getDataAPI override) because it is conceptually abstract and there is no data
+     * operation on it directly. Their subclasses must provide the real API.
+     *
+     * However it has a Resource to map the model owned at this level.
+     *
+     * TODO: Resource implementations should be placed outside the model (keeping it here as an inner class for easier development).
+     */
+    public static class Resource extends APIResource {
+
+        private String scope;
+
+        public Resource() {}
+
+        public Resource(BaseCredentials model) {
+            scope = model.getScope().toString();
+        }
+
+        public String getScope() {
+            return scope;
+        }
+
+        public void setScope(String scope) {
+            this.scope = scope;
+        }
     }
 }

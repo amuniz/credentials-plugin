@@ -24,6 +24,10 @@
 
 package com.cloudbees.plugins.credentials.domains;
 
+import com.cloudbees.plugins.credentials.api.resource.APIExportable;
+import com.cloudbees.plugins.credentials.api.resource.APIResource;
+import com.fasterxml.jackson.annotation.JsonTypeId;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -34,6 +38,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -41,7 +48,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * a bunch of web applications, source control systems, issue trackers, etc all share the same username/password backing
  * database.
  */
-public class Domain implements Serializable {
+public class Domain implements Serializable, APIExportable {
 
     /**
      * Set serialization version.
@@ -236,5 +243,62 @@ public class Domain implements Serializable {
      */
     private static final class ResourceHolder {
         private static final Domain GLOBAL = new Domain(null, null, Collections.<DomainSpecification>emptyList());
+    }
+
+    @Override
+    public APIResource getDataAPI() {
+        return new Resource(this);
+    }
+
+    @Symbol("domain")
+    public static class Resource extends APIResource {
+
+        private String name;
+
+        private String description;
+
+        private List<APIResource> specifications;
+
+        public Resource() {}
+
+        public Resource(Domain model) {
+            name = model.getName();
+            description = model.getDescription();
+            specifications = model.getSpecifications().stream().
+                    map(spec -> spec.getDataAPI()).
+                    collect(Collectors.toList());
+        }
+
+        @Override
+        public Object toModel() {
+            return new Domain(name, description,
+                    specifications.stream()
+                            .map(spec -> (DomainSpecification) spec.toModel())
+                            .collect(Collectors.toList()));
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public List<APIResource> getSpecifications() {
+            return specifications;
+        }
+
+        public void setSpecifications(List<APIResource> specifications) {
+            this.specifications = specifications;
+        }
     }
 }
