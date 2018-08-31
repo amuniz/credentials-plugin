@@ -13,6 +13,8 @@ import java.util.List;
 /**
  * JSON handling utility.
  * Decoupled from the actual I/O mechanism (could be CLI, HTTP API, etc).
+ *
+ * This should become pluggable to support more data formats (ie. YAML).
  */
 public class JSONDataMapper {
 

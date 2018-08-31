@@ -11,7 +11,7 @@ import java.util.List;
 @JsonTypeIdResolver(SymbolResolver.class)
 public class APIResource {
 
-    // TODO: once hudson.model.Api is fixed
+    // TODO: once hudson.model.Api is fixed to be able to serialize the target object without a StaplerRequest in the context
     // @JsonRawValue
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String missingModel;

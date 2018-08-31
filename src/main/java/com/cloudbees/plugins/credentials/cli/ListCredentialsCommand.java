@@ -92,7 +92,6 @@ public class ListCredentialsCommand extends BaseCredentialsCLICommand {
                 JSONCLICommandHelper.writeOutput(new VersionedResource(all), stdout);
             } else if (asYaml) {
                 // TODO: this should be just another I/O API format, extensible
-                //YAMLCLICommandHelper.writeOutput(new VersionedResource(all), stdout);
                 YAMLFactory yf = new YAMLFactory();
                 ObjectMapper mapper = new ObjectMapper(yf);
                 mapper.writeValue(stdout, new VersionedResource(all));
