@@ -251,7 +251,7 @@ public class DomainCredentials implements APIExportable {
     }
 
     @Override
-    public APIResource getDataAPI() {
+    public Resource getDataAPI() {
         return new Resource(this);
     }
 
@@ -278,7 +278,7 @@ public class DomainCredentials implements APIExportable {
 
         @Override
         public Object toModel() {
-            return new DomainCredentials((Domain) domain.toModel(),
+            return new DomainCredentials(domain != null ? (Domain) domain.toModel() : null,
                     credentials.stream()
                             .map(cred -> (Credentials) cred.toModel())
                             .collect(Collectors.toList()));

@@ -2,10 +2,10 @@ package com.cloudbees.plugins.credentials.api.resource;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
-public interface APIExportable {
+public interface APIExportable<T extends APIResource> {
 
     @CheckForNull
-    default APIResource getDataAPI() {
+    default T getDataAPI() {
         return null;
     }
 }

@@ -48,7 +48,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * a bunch of web applications, source control systems, issue trackers, etc all share the same username/password backing
  * database.
  */
-public class Domain implements Serializable, APIExportable {
+public class Domain implements Serializable, APIExportable<Domain.Resource> {
 
     /**
      * Set serialization version.
@@ -246,7 +246,7 @@ public class Domain implements Serializable, APIExportable {
     }
 
     @Override
-    public APIResource getDataAPI() {
+    public Resource getDataAPI() {
         return new Resource(this);
     }
 

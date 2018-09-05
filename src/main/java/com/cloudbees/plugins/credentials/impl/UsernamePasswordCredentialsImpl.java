@@ -24,6 +24,7 @@
 package com.cloudbees.plugins.credentials.impl;
 
 import com.cloudbees.plugins.credentials.CredentialsScope;
+import com.cloudbees.plugins.credentials.api.resource.APIExportable;
 import com.cloudbees.plugins.credentials.api.resource.APIResource;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -118,7 +119,7 @@ public class UsernamePasswordCredentialsImpl extends BaseStandardCredentials imp
     }
 
     @Override
-    public APIResource getDataAPI() {
+    public Resource getDataAPI() {
         return new Resource(this);
     }
 
