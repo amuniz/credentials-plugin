@@ -127,7 +127,7 @@ public class UsernamePasswordCredentialsImpl extends BaseStandardCredentials imp
     public static final class Resource extends BaseStandardCredentials.Resource {
 
         private String username;
-        // not getter for password as it is not "readable" through the API
+
         private String password;
 
         public Resource() {}
@@ -135,6 +135,7 @@ public class UsernamePasswordCredentialsImpl extends BaseStandardCredentials imp
         public Resource(UsernamePasswordCredentialsImpl model) {
             super(model);
             username = model.getUsername();
+            password = model.getPassword().getPlainText();
         }
 
         public String getUsername() {
@@ -143,6 +144,10 @@ public class UsernamePasswordCredentialsImpl extends BaseStandardCredentials imp
 
         public void setUsername(String username) {
             this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
         }
 
         public void setPassword(String password) {

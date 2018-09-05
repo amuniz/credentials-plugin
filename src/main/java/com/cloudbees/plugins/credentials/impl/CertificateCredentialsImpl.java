@@ -27,6 +27,8 @@ import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.CredentialsSnapshotTaker;
 import com.cloudbees.plugins.credentials.SecretBytes;
+import com.cloudbees.plugins.credentials.api.resource.APIExportable;
+import com.cloudbees.plugins.credentials.api.resource.APIResource;
 import com.cloudbees.plugins.credentials.common.StandardCertificateCredentials;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -64,6 +66,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -244,7 +247,7 @@ public class CertificateCredentialsImpl extends BaseStandardCredentials implemen
     /**
      * Represents a source of a {@link KeyStore}.
      */
-    public static abstract class KeyStoreSource extends AbstractDescribableImpl<KeyStoreSource> {
+    public static abstract class KeyStoreSource extends AbstractDescribableImpl<KeyStoreSource> implements APIExportable {
 
         /**
          * Returns the {@link byte[]} content of the {@link KeyStore}.
@@ -799,6 +802,57 @@ public class CertificateCredentialsImpl extends BaseStandardCredentials implemen
             return new CertificateCredentialsImpl(credentials.getScope(), credentials.getId(),
                     credentials.getDescription(), credentials.getPassword().getEncryptedValue(),
                     new UploadedKeyStoreSource(SecretBytes.fromBytes(bos.toByteArray())));
+        }
+    }
+
+    @Override
+    public Resource getDataAPI() {
+        return new Resource(this);
+    }
+
+    @Symbol("certificate")
+    public static class Resource extends BaseStandardCredentials.Resource {
+
+        private String password;
+
+        private String file;
+
+        public Resource() {
+            super();
+        }
+
+        public Resource(CertificateCredentialsImpl model) {
+            super(model);
+            if (model.getKeyStoreSource() instanceof UploadedKeyStoreSource) {
+                file = "uploaded file";
+            } else {
+                // it is a file on master
+                file = ((FileOnMasterKeyStoreSource) model.getKeyStoreSource()).getKeyStoreFile();
+            }
+            password = model.getPassword().getPlainText();
+        }
+
+        @Override
+        public Object toModel() {
+            return new CertificateCredentialsImpl(
+                    CredentialsScope.valueOf(this.getScope()), getId(), getDescription(), password,
+                    new FileOnMasterKeyStoreSource(file));
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public String getFile() {
+            return file;
+        }
+
+        public void setFile(String file) {
+            this.file = file;
         }
     }
 }
