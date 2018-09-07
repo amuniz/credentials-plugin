@@ -35,6 +35,7 @@ import com.cloudbees.plugins.credentials.domains.Domain;
 import com.cloudbees.plugins.credentials.domains.DomainCredentials;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import hudson.Extension;
 
 import java.util.ArrayList;
@@ -93,6 +94,7 @@ public class ListCredentialsCommand extends BaseCredentialsCLICommand {
             } else if (asYaml) {
                 // TODO: this should be just another I/O API format, extensible
                 YAMLFactory yf = new YAMLFactory();
+                yf.disable(YAMLGenerator.Feature.USE_NATIVE_TYPE_ID);
                 ObjectMapper mapper = new ObjectMapper(yf);
                 mapper.writeValue(stdout, new VersionedResource(all));
             }
