@@ -24,11 +24,13 @@
 
 package com.cloudbees.plugins.credentials.domains;
 
+import com.cloudbees.plugins.credentials.api.resource.APIResource;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.springframework.util.AntPathMatcher;
 
@@ -177,6 +179,58 @@ public class PathSpecification extends DomainSpecification {
         @Override
         public String getDisplayName() {
             return Messages.PathSpecification_DisplayName();
+        }
+    }
+
+    @Override
+    public APIResource getDataAPI() {
+        return new Resource(this);
+    }
+
+    @Symbol("pathSpec")
+    public static class Resource extends APIResource {
+
+        private String includes;
+
+        private String excludes;
+
+        private boolean caseSensitive;
+
+        public Resource() {}
+
+        public Resource(PathSpecification model) {
+            includes = model.getIncludes();
+            excludes = model.getExcludes();
+            caseSensitive = model.isCaseSensitive();
+        }
+
+        @Override
+        public PathSpecification toModel() {
+            return new PathSpecification(includes, excludes, caseSensitive);
+        }
+
+        public String getIncludes() {
+            return includes;
+        }
+
+        public void setIncludes(String includes) {
+            this.includes = includes;
+        }
+
+        public String getExcludes() {
+            return excludes;
+        }
+
+        public void setExcludes(String excludes) {
+            this.excludes = excludes;
+        }
+
+        public boolean isCaseSensitive() {
+            return caseSensitive;
+        }
+
+        public void setCaseSensitive(boolean caseSensitive) {
+            this.caseSensitive = caseSensitive;
         }
     }
 }

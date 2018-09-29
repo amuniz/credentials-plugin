@@ -24,12 +24,14 @@
 
 package com.cloudbees.plugins.credentials.domains;
 
+import com.cloudbees.plugins.credentials.api.resource.APIResource;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -209,6 +211,47 @@ public class HostnamePortSpecification extends DomainSpecification {
         @Override
         public String getDisplayName() {
             return Messages.HostnamePortSpecification_DisplayName();
+        }
+    }
+
+    @Override
+    public APIResource getDataAPI() {
+        return new Resource(this);
+    }
+
+    @Symbol("hostnamePortSpec")
+    public static class Resource extends APIResource {
+
+        private String includes;
+
+        private String excludes;
+
+        public Resource() {}
+
+        public Resource(HostnamePortSpecification model) {
+            includes = model.getIncludes();
+            excludes = model.getExcludes();
+        }
+
+        @Override
+        public HostnamePortSpecification toModel() {
+            return new HostnamePortSpecification(includes, excludes);
+        }
+
+        public String getIncludes() {
+            return includes;
+        }
+
+        public void setIncludes(String includes) {
+            this.includes = includes;
+        }
+
+        public String getExcludes() {
+            return excludes;
+        }
+
+        public void setExcludes(String excludes) {
+            this.excludes = excludes;
         }
     }
 }

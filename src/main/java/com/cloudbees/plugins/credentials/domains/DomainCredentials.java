@@ -26,6 +26,8 @@ package com.cloudbees.plugins.credentials.domains;
 
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsMatcher;
+import com.cloudbees.plugins.credentials.api.resource.APIExportable;
+import com.cloudbees.plugins.credentials.api.resource.APIResource;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.util.CopyOnWriteMap;
@@ -36,6 +38,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
+
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -43,7 +48,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  *
  * @since 1.5
  */
-public class DomainCredentials {
+public class DomainCredentials implements APIExportable {
     /**
      * The domain that these credentials are scoped to.
      */
@@ -243,5 +248,56 @@ public class DomainCredentials {
     @SuppressWarnings("unused") // by stapler
     public List<Credentials> getCredentials() {
         return credentials;
+    }
+
+    @Override
+    public Resource getDataAPI() {
+        return new Resource(this);
+    }
+
+    @Symbol("domainCredentials")
+    public static class Resource extends APIResource {
+
+        private APIResource domain;
+        private List<APIResource> credentials;
+
+        public Resource() {}
+
+        public Resource(DomainCredentials model) {
+            domain = model.getDomain().getDataAPI();
+            credentials = model.getCredentials().stream().map(cred -> {
+                APIResource dataAPI = cred.getDataAPI();
+                if (dataAPI != null) {
+                    return dataAPI;
+                } else {
+                    // a model not implementing the new data-API
+                    return new APIResource(cred);
+                }
+            }).collect(Collectors.toList());
+        }
+
+        @Override
+        public Object toModel() {
+            return new DomainCredentials(domain != null ? (Domain) domain.toModel() : null,
+                    credentials.stream()
+                            .map(cred -> (Credentials) cred.toModel())
+                            .collect(Collectors.toList()));
+        }
+
+        public APIResource getDomain() {
+            return domain;
+        }
+
+        public void setDomain(APIResource domain) {
+            this.domain = domain;
+        }
+
+        public List<APIResource> getCredentials() {
+            return credentials;
+        }
+
+        public void setCredentials(List<APIResource> credentials) {
+            this.credentials = credentials;
+        }
     }
 }

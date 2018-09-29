@@ -33,14 +33,17 @@ import com.cloudbees.plugins.credentials.domains.Domain;
 import com.cloudbees.plugins.credentials.domains.DomainSpecification;
 import com.cloudbees.plugins.credentials.domains.HostnameSpecification;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
+import hudson.ExtensionList;
 import hudson.cli.CLICommand;
 import hudson.cli.CLICommandInvoker;
 import hudson.model.Items;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import jenkins.model.Jenkins;
+import org.apache.tools.ant.filters.StringInputStream;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,15 +54,7 @@ import org.xmlunit.matchers.CompareMatcher;
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
 
@@ -304,6 +299,60 @@ public class CLICommandsTest {
         invoker = new CLICommandInvoker(r, new DeleteCredentialsDomainCommand());
         assertThat(invoker.invokeWithArgs("system::system::jenkins", "smokes"), succeededSilently());
         assertThat(store.getDomainByName("smokes"), nullValue());
+    }
+
+    @Test
+    public void jsonCLISmokes() throws IOException {
+        Domain smokes = new Domain("smokes", "smoke test domain",
+                Collections.<DomainSpecification>singletonList(new HostnameSpecification("smokes.example.com", null)));
+        UsernamePasswordCredentialsImpl smokey =
+                new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "smokes-id", "smoke testing", "smoke",
+                        "smoke text");
+        store.addDomain(smokes, smokey);
+        CLICommandInvoker invoker = new CLICommandInvoker(r, new ListCredentialsCommand());
+        CLICommandInvoker.Result result = invoker.invokeWithArgs("system::system::jenkins", "--json");
+        System.out.println(result.stdout());
+        assertThat(result, succeeded());
+
+        String input = "{\n" +
+                "\t\"version\": \"1\",\n" +
+                "\t\"data\": [{\n" +
+                "\t\t\"type\": \"domainCredentials\",\n" +
+                "\t\t\"domain\": {\n" +
+                "\t\t\t\"type\": \"domain\",\n" +
+                "\t\t\t\"name\": \"smokes\",\n" +
+                "\t\t\t\"description\": \"smoke test domain\",\n" +
+                "\t\t\t\"specifications\": [{\n" +
+                "\t\t\t\t\"type\": \"com.cloudbees.plugins.credentials.domains.HostnameSpecification$Resource\",\n" +
+                "\t\t\t\t\"includes\": \"smokes.example.com\",\n" +
+                "\t\t\t\t\"excludes\": null\n" +
+                "\t\t\t}]\n" +
+                "\t\t},\n" +
+                "\t\t\"credentials\": [{\n" +
+                "\t\t\t\"type\": \"usernamePassword\",\n" +
+                "\t\t\t\"scope\": \"GLOBAL\",\n" +
+                "\t\t\t\"id\": \"smokes-id\",\n" +
+                "\t\t\t\"description\": \"smoke testing\",\n" +
+                "\t\t\t\"username\": \"smoke\"\n" +
+                "\t\t}, {\n" +
+                "\t\t\t\"type\": \"usernamePassword\",\n" +
+                "\t\t\t\"scope\": \"GLOBAL\",\n" +
+                "\t\t\t\"id\": \"smokes-id-2\",\n" +
+                "\t\t\t\"description\": \"smoke testing 2\",\n" +
+                "\t\t\t\"username\": \"smoke 2\"\n" +
+                "\t\t}]\n" +
+                "\t}]\n" +
+                "}";
+
+        System.out.println("Input JSON:\n" + input);
+
+        assertThat(store.getCredentials(Domain.global()), hasSize(0));
+        invoker = new CLICommandInvoker(r, new ImportAllCredentialsAsJSONCommand());
+        result = invoker.withStdin(new StringInputStream(input)).invokeWithArgs("system::system::jenkins", "--json");
+        System.out.println(result.stdout());
+        assertThat(result, succeeded());
+        assertThat(store.getCredentials(smokes), hasSize(2));
+        //assertThat(store.getCredentials(Domain.global()), hasSize(1));
     }
 
     private static ByteArrayInputStream asStream(String text) {
